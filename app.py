@@ -3,6 +3,13 @@ import sys
 
 from telethon import TelegramClient
 
+from src import (
+    build_parser,
+    delete_own_messages,
+    load_credentials,
+    APIError
+)
+
 
 async def main():
     parser = build_parser()
@@ -15,7 +22,9 @@ async def main():
         sys.exit(1)
 
     session = "auto_delete_session"
-    async with TelegramClient(session, api_id, api_hash) as client:
+    async with TelegramClient(session,
+                              api_id,
+                              api_hash) as client:
         # Login flow if first run
         if not await client.is_user_authorized():
             print("⚠️  First run: follow the login prompts …")
