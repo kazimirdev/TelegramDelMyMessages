@@ -51,7 +51,7 @@ API_HASH=abcdef0123456789abcdef0123456789
 ## 🚀 Usage
 
 ```bash
-python app.py --chat -1001226616550 --speed 2 --limit 100
+python app.py --chat -1001222222220 --speed 2 --limit 100
 ```
 
 | Flag (shorthand) | Description                                                                                                                 | Default |
@@ -71,7 +71,7 @@ python app.py -c -100999888777 -l 50
 python app.py -c @mygroup -c -100123456 -s 5
 
 # I’ve left the channel – include access-hash
-python app.py -c 1226616550:987654321098765432
+python app.py -c 1222222220:987654321098765432
 ```
 
 ---
