@@ -1,4 +1,3 @@
-````markdown
 <!-- prettier-ignore-start -->
 <h1 align="center">🧹 Telegram&nbsp;&mdash; Delete <em>Your</em> Messages</h1>
 <p align="center">
@@ -32,7 +31,7 @@ git clone https://github.com/<you>/TelegramDelMyMessages.git
 cd TelegramDelMyMessages
 python -m venv .venv && source .venv/bin/activate   # optional
 pip install -r requirements.txt
-````
+```
 
 ---
 
