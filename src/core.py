@@ -43,25 +43,30 @@ def _normalize_numeric_id(raw: str) -> int | None:
 
 def _lookup_access_hash(session: SQLiteSession, channel_id: int) -> int | None:
     """
-    Search Telethon session cache for a channel's access-hash.
+    Try to pull an access-hash for *channel_id* from whatever cache Telethon exposes.
+
+    Telethon ≤1.28  →  session.entity_cache (dict)
+    Telethon ≥1.29  →  session._entities     (dict, private)
     """
-    for (cid, ah), _ in session.entity_cache.items():
-        if cid == channel_id:
-            return ah
+    # Newer Telethon
+    cache = getattr(session, "_entities", None)
+    if isinstance(cache, dict):
+        for (cid, ah), _ in cache.items():
+            if cid == channel_id:
+                return ah
+
+    # Older Telethon
+    cache = getattr(session, "entity_cache", None)
+    if isinstance(cache, dict):
+        for (cid, ah), _ in cache.items():
+            if cid == channel_id:
+                return ah
+
+    # Not cached
     return None
 
 
-async def resolve_targets(
-    client: TelegramClient, raw_chats: Sequence[str]
-) -> List[ChatTarget]:
-    """
-    Convert user-supplied identifiers into InputPeerChannel objects.
-
-    Strategy:
-      1. 'id:access_hash'  → build directly.
-      2. Let Telethon resolve (@username, t.me link, numeric id if still member).
-      3. Bare numeric but no membership → look up cached access-hash.
-    """
+async def resolve_targets(client: TelegramClient, raw_chats: Sequence[str]) -> List[ChatTarget]:
     out: list[ChatTarget] = []
 
     for raw in raw_chats:
@@ -73,20 +78,28 @@ async def resolve_targets(
             out.append(ChatTarget(raw, InputPeerChannel(abs(cid), ah)))
             continue
 
-        # 2) Try Telethon resolution
+        # 2) Telethon tries with raw
         try:
             ent = await client.get_input_entity(raw)
-            if isinstance(ent, InputPeerChannel):
+            out.append(ChatTarget(raw, ent))
+            continue
+        except (ValueError, errors.UsernameInvalidError, errors.UsernameNotOccupiedError):
+            pass  # we’ll try other strategies
+
+        # 2b) If raw looks numeric, try again with int (works when you’re still a member)
+        if (num := _normalize_numeric_id(raw)) is not None:
+            try:
+                ent = await client.get_input_entity(int(raw))  # int → triggers server query
                 out.append(ChatTarget(raw, ent))
                 continue
-        except (ValueError, errors.UsernameInvalidError, errors.UsernameNotOccupiedError):
-            pass  # fall through to #3
+            except (ValueError, errors.RPCError):
+                pass  # fall through to cache lookup
 
-        # 3) Numeric id but not member
-        if (cid := _normalize_numeric_id(raw)) is not None:
+        # 3) Numeric id but not member → look for cached access-hash
+        if num is not None:
             if isinstance(client.session, SQLiteSession):
-                if ah := _lookup_access_hash(client.session, cid):
-                    out.append(ChatTarget(raw, InputPeerChannel(cid, ah)))
+                if ah := _lookup_access_hash(client.session, num):
+                    out.append(ChatTarget(raw, InputPeerChannel(num, ah)))
                     continue
             print(
                 f"⚠️  ID '{raw}' needs an access-hash. Re-join the chat "
