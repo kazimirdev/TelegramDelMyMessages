@@ -119,6 +119,3 @@ python app.py -c <id>:<access_hash>
 ## 📄 License
 
 This project is released under the **MIT License** — see `LICENSE` for details.
-
-```
-```
