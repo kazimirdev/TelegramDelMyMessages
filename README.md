@@ -27,7 +27,7 @@
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/<you>/TelegramDelMyMessages.git
+git clone https://github.com/kazimirdev/TelegramDelMyMessages.git
 cd TelegramDelMyMessages
 python -m venv .venv && source .venv/bin/activate   # optional
 pip install -r requirements.txt
