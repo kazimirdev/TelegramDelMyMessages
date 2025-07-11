@@ -2,29 +2,21 @@ import argparse
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Delete your sent messages from selected Telegram chats."
+    p = argparse.ArgumentParser(
+        prog="TelegramDelMyMessages",
+        description="Delete *your own* Telegram messages from one or more chats.",
     )
-    parser.add_argument(
+    p.add_argument(
         "--chat",
         "-c",
-        type=int,
         action="append",
         required=True,
-        help="Chat ID (repeatable)."
+        help=(
+            "Chat identifier (repeatable). Accepts @username, t.me link, -100… or id, "
+            "or 'id:access_hash' when you’ve left the chat."
+        ),
     )
-    parser.add_argument(
-        "--speed",
-        "-s",
-        type=float,
-        default=1.0,
-        help="Messages per second (default 1). Use >1 for faster, <1 for slower."
-    )
-    parser.add_argument(
-        "--limit",
-        "-l",
-        type=int,
-        default=1000,
-        help="Messages to scan per chat (default 1000)."
-    )
-    return parser
+    p.add_argument("--speed", "-s", type=float, default=1.0, help="Msgs per second (default 1).")
+    p.add_argument("--limit", "-l", type=int, default=1000, help="Max messages to scan.")
+    p.add_argument("--dry-run", action="store_true", help="Preview deletions only.")
+    return p
